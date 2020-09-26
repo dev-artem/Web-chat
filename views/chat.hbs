@@ -1,0 +1,71 @@
+{{> header}}
+
+<div class="container">
+    <div class="chat">
+        <div class="chat-messages card p-2" >
+            {{#if chat}}
+                {{#each chat}}
+                    <div class="message card m-1 p-1">
+                        <h5><span class="badge badge-success">{{this.username}}</span></h5><p>{{this.message}}</p>
+                    </div>
+                {{/each}}
+            {{/if}}
+        </div>
+        <form class="chat-form">
+            <input
+            class="form-control"
+            name="msg"
+            type="text"
+            placeholder="Enter Message"
+            />
+            <button class="btn btn-primary" type="submit">Send</button>
+        </form>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const chatForm = document.querySelector(".chat-form")
+    const chatMessages = document.querySelector('.chat-messages')
+    const chatName = document.querySelector('.chat-name')
+    const socket = io();
+
+    const chatId = location.href.slice(location.href.lastIndexOf('/') + 1)
+    const username = localStorage.getItem('username');
+
+    socket.emit('join chat', {chatId, username });
+
+    socket.on('message', message => {
+        createMessage(message)
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    })
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();    
+        const msg = e.target.msg.value
+
+        socket.emit('message', {
+            message: msg,
+            chatId,
+            username
+        })
+
+        e.target.elements.msg.value = ''
+        e.target.elements.msg.focus() 
+    })
+
+
+    function createMessage({username, message}){
+        const div = document.createElement('div')
+        div.classList.add('message')
+        div.classList.add('card')
+        div.classList.add('m-1')
+        div.classList.add('p-1')
+        div.innerHTML = `
+            <h5><span class="badge badge-success">${username}</span></h5><p>${message}</p>
+        `;
+        document.querySelector(".chat-messages").appendChild(div)
+    }
+
+</script>

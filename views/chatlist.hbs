@@ -1,0 +1,53 @@
+    {{>header }}
+
+<div class="container">
+    <form class="createchat-form">
+        <div class="form-group">
+            <label for="chat-input">Enter chat name</label>
+            <input type="text" class="form-control" id="chat-input" name="name" />
+            <button class="btn btn-primary" type="submit">Create</button>
+        </div>
+    </form>
+</div>
+
+<div class="container">    
+    <div class="chat-list list-group">
+        {{#if chatlist}}
+            {{#each chatlist}}
+                <a href="/chat/{{this._id}}" class="list-group-item list-group-item-action">{{this.name}}</a>
+            {{/each}}
+        {{/if}}
+    </div>    
+</div>
+
+    <script>
+        const form = document.querySelector('.createchat-form')
+        const list = document.querySelector('.chat-list')
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = e.target.name.value;
+
+            try{
+                const res = await fetch('/list', {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json"},
+                    body: JSON.stringify({name})
+                })
+                const data = await res.json();
+                console.log(data)
+                await addChat(data)
+            } catch (error) {
+                console.log(error)
+            }
+        })
+
+
+        function addChat(chat){
+            const div = document.createElement('div')
+            div.classList.add('chat')
+            div.innerHTML = `<a href="/chat/${chat._id}" class="list-group-item list-group-item-action">${chat.name}</a>`
+            list.appendChild(div)
+        }
+    </script>
